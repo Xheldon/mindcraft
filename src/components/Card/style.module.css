@@ -7,15 +7,22 @@
     margin: 5px 0;
     position: relative;
 }
-.card-add, .card-remove {
+.card-add-prev, .card-add-next, .card-add-children {
     font-size: 30px;
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
+    border: 1px solid blue;
 }
-.card-add {
+.card-add-prev {
     top: 0;
 }
-.card-remove {
+.card-add-next {
     bottom: 0;
+}
+.card-add-children {
+    left: 100%;
+    top: 50%;
+    transform: translateX(-100%) translateY(-50%);
+    top: 250px;
 }

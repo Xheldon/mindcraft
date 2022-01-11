@@ -1,7 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { v4 as uuid } from 'uuid';
 
-const initialState = [{
+// TODO: 考虑使用链表，而不是数组，链表查找速度更快
+let initialState = [{
     type: 'node',
     depth: 0,
     isSelete: false,
@@ -16,7 +17,6 @@ const initialState = [{
 
 const node = {
     type: 'node',
-    depth: 0,
     isSelete: false,
     isHighlight: false,
     parent: null,
@@ -32,60 +32,77 @@ export const dataSlice = createSlice({
     reducers: {
         initState: (state, action) => {
             // Note: 初始加载的数据
-            state.data = action.payload;
+            // TODO: 反序列化的时候，parent 字段存的是 id，不是引用，因为序列化的时候引用不能被序列化
+            state = action.payload;
+        },
+        addPrev: (state, action) => {
+            // action.payload = { path: [xxx, yyy], _pathssition: after | before | null}; 节点插入到 zzz 的后面
+            // null 表示是添加第一个元素
+            const { node: curr } = action.payload;
+            const newNode = JSON.parse(JSON.stringify(node));
+            newNode.depth = curr.depth;
+            newNode.id = uuid();
+            newNode.parent = curr.parent;
+            function find(data) {
+                data.forEach((item, key) => {
+                    if (item.id === curr.id) {
+                        data.splice(key, 0, newNode);
+                    } else {
+                        find(item.children);
+                    }
+                });
+            }
+            find(state);
+        },
+        addNext: (state, action) => {
+            const { node: curr } = action.payload;
+            const newNode = JSON.parse(JSON.stringify(node));
+            newNode.depth = curr.depth;
+            newNode.id = uuid();
+            newNode.parent = curr.parent;
+            function find(data) {
+                data.forEach((item, key) => {
+                    if (item.id === curr.id) {
+                        data.splice(key + 1, 0, newNode);
+                    } else {
+                        find(item.children);
+                    }
+                });
+            }
+            find(state);
         },
         addChildren: (state, action) => {
             // action.payload = { path: [xxx, yyy], _pathssition: after | before | null}; 节点插入到 zzz 的后面
             // null 表示是添加第一个元素
-            const { path, position } = action.payload;
-            let _path = path;
-            if (position) {
-                _path = path.slice(0, -1);
-            }
-            // Note: 如果 _path 是空数组，说明是添加了根节点的兄弟元素，直接对 state 进行操作
-            let parent = null;
-            const children = _path.reduce((prev, curr) => {
-                const data = prev.find(node => node.id === curr);
-                if (data) {
-                    parent = data;
-                    return data.children;
-                }
-                return prev;
-            }, state.data);
-            // TODO
+            const { node: curr } = action.payload;
             const newNode = JSON.parse(JSON.stringify(node));
-            newNode.depth = parent.depth + 1;
+            newNode.depth = curr.depth + 1;
             newNode.id = uuid();
-            // Note: 子节点保持对父节点的引用
-            newNode.parent = parent;
-            if (children.length) {
-                // Note: 此时说明是在一个已有 children 的元素中添加子节点，depth 继承已有的子节点
-                const index = children.findIndex(node => node.id === path[path.length - 1]);
-                children.splice(position === 'after' ? index + 1 : index, 0, newNode);
-            } else {
-                // Note: 此时说明是在一个还未有元素的节点添加子节点, depth + 1
-                children.push(newNode);
+            newNode.parent = curr.id;
+            // Note: 不论节点有没有内容，新添加的节点都放到最后面，直接修改 curr.children.push 会报错：
+            //  Uncaught TypeError: Cannot add property 0, object is not extensible
+            function find(data) {
+                data.forEach((item) => {
+                    if (item.id === curr.id) {
+                        item.children.push(newNode);
+                    } else {
+                        find(item.children);
+                    }
+                });
             }
+            find(state);
         },
         removeChildren: (state, action) => {
             // Note: 寻找 action payload 中的 id 对应的 node, 移除之
-            const { path } = action.payload;
-            const _path = path.slice(0, -1);
-            const children = _path.reduce((prev, curr) => {
-                const data = prev.find(node => node.id === curr);
-                if (data) {
-                    return data.children;
-                }
-                return prev;
-            }, state.data);
-            // Note: children 一定存在
-            const index = children.findIndex(node => node.id === path[path.length - 1]);
-            children.splice(index, 1);
+            const { node } = action.payload;
+            const list = node.parent ? node.parent.children : state;
+            const index = list.findIndex(child => child.id === node.id);
+            list.splice(index, 1);
         }
     }
 });
 
-export const { initState, addChildren, removeChildren} = dataSlice.actions;
+export const { initState, addPrev, addNext, addChildren, removeChildren} = dataSlice.actions;
 
 export const selectData = state => state.data;
 export const selectDepth = state => {
@@ -114,7 +131,6 @@ export const selectCol = depth => {
         return list;
     };
     return (state) => {
-        console.log('state in selectCol:', state);
         return find(state.data, depth);
     };
 };
@@ -122,12 +138,11 @@ export const selectCol = depth => {
 export const selectPath = node => {
     let list = [];
     return () => {
-        console.log('node:', node);
         let _node = node;
         // Note: 先将当前节点放到最后
         list.push(node.id);
         while(_node.parent) {
-            list.unshift(node.parent.id);
+            list.unshift(node.parent);
             _node = node.parent;
         }
         return list;

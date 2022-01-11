@@ -9,9 +9,7 @@ import styles  from './style.module.css';
  */
 export function Col(props) {
     const {depth} = props;
-    console.log('depthh:', depth);
     const list = useSelector(selectCol(depth));
-    console.log('list:', list);
     return (
         <div className={styles.col}>
             {list.map((node) => {
