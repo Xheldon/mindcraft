@@ -1,0 +1,21 @@
+.card {
+    background-color: cadetblue;
+    width: 100%;
+    height: auto;
+    min-height: 500px;
+    border: 1px solid red;
+    margin: 5px 0;
+    position: relative;
+}
+.card-add, .card-remove {
+    font-size: 30px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.card-add {
+    top: 0;
+}
+.card-remove {
+    bottom: 0;
+}

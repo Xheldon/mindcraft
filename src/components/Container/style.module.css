@@ -1,0 +1,7 @@
+.container {
+    height: 100%;
+    background-color: aquamarine;
+    width: 100vw;
+    height: calc(100vh - 50px);
+    display: flex;
+}
