@@ -9,7 +9,7 @@ import {
     highlight,
 } from '../../app/dataSlice'
 
-import styles  from './style.module.css';
+import styles from './style.module.css';
 
 /**
  * 此为每列的容器组件
@@ -18,7 +18,7 @@ export function Card(props) {
     const {node} = props;
     const dispatch = useDispatch();
     return (
-        <div className={styles.card} style={{
+        <div type="card" className={styles.card} style={{
             backgroundColor: node.isHighlight ? 'yellow' : null,
             borderTop: node.isFirst ? '2px solid green' : null,
             borderBottom: node.isLast ? '2px solid green' : null,

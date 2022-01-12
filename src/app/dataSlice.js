@@ -193,6 +193,16 @@ export const dataSlice = createSlice({
                 hlt({children: state}, id);
             });
         },
+        unHighlightAll: (state, action) => {
+            function removeHlt(data) {
+                data.children.forEach(child => {
+                    child.isHighlight = false;
+                    removeHlt(child);
+                });
+            }
+            // Note: 先全部置为 false
+            removeHlt({children: state});
+        },
     }
 });
 
@@ -203,6 +213,7 @@ export const {
     addChildren,
     removeChildren,
     highlight,
+    unHighlightAll,
 } = dataSlice.actions;
 
 export const selectData = state => state.data;
