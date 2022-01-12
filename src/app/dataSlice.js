@@ -9,8 +9,8 @@ let initialState = [{
     isHighlight: false,
     parent: null,
     id: uuid(),
-    isFirst: false,
-    isLast: false,
+    isFirst: true,
+    isLast: true,
     isReadOnly: false,
     children: [],
 }];
@@ -43,12 +43,20 @@ export const dataSlice = createSlice({
             newNode.depth = curr.depth;
             newNode.id = uuid();
             newNode.parent = curr.parent;
+            // Note: 如果节点是在高亮状态下新增的子节点，则添加的兄弟节点也应该是高亮状态
+            if (curr.isHighlight) {
+                newNode.isHighlight = true;
+            }
             function find(data) {
-                data.children.forEach((item, key) => {
-                    if (item.id === curr.id) {
+                data.children.forEach((child, key) => {
+                    if (child.id === curr.id) {
+                        if (child.isFirst) {
+                            child.isFirst = false;
+                            newNode.isFirst = true;
+                        }
                         data.children.splice(key, 0, newNode);
                     } else {
-                        find(item);
+                        find(child);
                     }
                 });
             }
@@ -60,12 +68,20 @@ export const dataSlice = createSlice({
             newNode.depth = curr.depth;
             newNode.id = uuid();
             newNode.parent = curr.parent;
+            // Note: 如果节点是在高亮状态下新增的子节点，则添加的兄弟节点也应该是高亮状态
+            if (curr.isHighlight) {
+                newNode.isHighlight = true;
+            }
             function find(data) {
-                data.children.forEach((item, key) => {
-                    if (item.id === curr.id) {
+                data.children.forEach((child, key) => {
+                    if (child.id === curr.id) {
+                        if (child.isLast) {
+                            child.isLast = false;
+                            newNode.isLast = true;
+                        }
                         data.children.splice(key + 1, 0, newNode);
                     } else {
-                        find(item);
+                        find(child);
                     }
                 });
             }
@@ -79,14 +95,23 @@ export const dataSlice = createSlice({
             newNode.depth = curr.depth + 1;
             newNode.id = uuid();
             newNode.parent = curr.id;
-            // Note: 不论节点有没有内容，新添加的节点都放到最后面，直接修改 curr.children.push 会报错：
-            //  Uncaught TypeError: Cannot add property 0, object is not extensible
+            // Note: 如果节点是在高亮状态下新增的子节点，则添加的子节点也应该是高亮状态
+            if (curr.isHighlight) {
+                newNode.isHighlight = true;
+            }
             function find(data) {
-                data.children.forEach((item) => {
-                    if (item.id === curr.id) {
-                        item.children.push(newNode);
+                data.children.forEach(child => {
+                    if (child.id === curr.id) {
+                        if (!child.children.length) {
+                            newNode.isFirst = true;
+                            newNode.isLast = true;
+                        } else {
+                            child.children[child.children.length - 1].isLast = false;
+                            newNode.isLast = true;
+                        }
+                        child.children.push(newNode);
                     } else {
-                        find(item);
+                        find(child);
                     }
                 });
             }
@@ -99,18 +124,21 @@ export const dataSlice = createSlice({
             const index = list.findIndex(child => child.id === node.id);
             list.splice(index, 1);
         },
-        // FIXME: 方法过于丑陋，不过好理解
+        // FIXME: 方法过于丑陋，不过好在容易理解
         highlight: (state, action) => {
-            // Note: 高亮当前节点的祖先节点和后代节点
+            // Note: 将大象装进冰箱分三步
+            //  1. 找到节点的祖先节点，记录 depth 和 id 放到 list 中
+            //  2. 找到节点的后代节点，记录 depth 和 id 放到 list 中
+            //  3. 将全部节点 highli 置为 false
+            //  4. 按 depth 从小到大将 list 中的 id 对应的节点 isHighlight 置为 true
+            // 这么费劲的原因是因为蛋疼的 immer 不支持属性循环引用...必须先收集 id，再一次性设置
+            // 甚至如果从叶节点设置后再设置父级节点，则父级的父级节点又变了，因此第 4 步需要按 depth 从小到大设置
             const { node } = action.payload;
-            console.log('highlight:', node);
-            // Note: 高亮祖先+自己
             const list = [];
             function find(data, id) {
                 data.children.forEach(child => {
                     if (child.id === id) {
                         list.push({id: child.id, depth: child.depth});
-                        // Note: 找到后找父节点
                         if (child.parent) {
                             find({children: state}, child.parent);
                         }
@@ -143,7 +171,6 @@ export const dataSlice = createSlice({
             findDown({children: state}, node.id);
             // Note: 按 depth 高亮
             list.sort((a, b) => a.depth - b.depth);
-            console.log('list:', list);
             function hlt(data, id) {
                 data.children.forEach(child => {
                     if (child.id === id) {
@@ -160,8 +187,8 @@ export const dataSlice = createSlice({
                     removeHlt(child);
                 });
             }
-            removeHlt({children: state});
             // Note: 先全部置为 false
+            removeHlt({children: state});
             list.forEach(({id}) => {
                 hlt({children: state}, id);
             });

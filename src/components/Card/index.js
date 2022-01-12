@@ -17,31 +17,30 @@ import styles  from './style.module.css';
 export function Card(props) {
     const {node} = props;
     const dispatch = useDispatch();
-    const data = useSelector(selectData);
-    console.log('data:', data);
     return (
         <div className={styles.card} style={{
             backgroundColor: node.isHighlight ? 'yellow' : null,
+            borderTop: node.isFirst ? '2px solid green' : null,
+            borderBottom: node.isLast ? '2px solid green' : null,
         }} onClick={(e) => {
             // TODO: 点击卡片的时候高亮子级节点和祖先节点
             e.stopPropagation();
             const hlt = highlight({node});
-            console.log('hlt:', hlt);
             dispatch(hlt);
         }}>
             <div className={styles['card-add-prev']} onClick={(e) => {
                 e.stopPropagation();
                 const add = addPrev({node});
-                console.log('addPrev:', add);
                 dispatch(add);
             }}>前面添加</div>
-            {node.id}
+            <div className={styles['card-content']}>
+                {node.id}
+            </div>
             <div className={styles['card-add-children']} onClick={(e) => {
                 e.stopPropagation();
                 const add = addChildren({
                     node,
                 });
-                console.log('addChildren:', add);
                 dispatch(add);
             }}>添加子节点</div>
             <div className={styles['card-add-next']} onClick={(e) => {
@@ -49,7 +48,6 @@ export function Card(props) {
                 const add = addNext({
                     node,
                 });
-                console.log('addNext:', add);
                 dispatch(add);
             }}>后面添加</div>
         </div>
