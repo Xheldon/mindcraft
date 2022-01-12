@@ -6,6 +6,7 @@ import {
     addChildren,
     selectPath,
     selectData,
+    highlight,
 } from '../../app/dataSlice'
 
 import styles  from './style.module.css';
@@ -19,8 +20,14 @@ export function Card(props) {
     const data = useSelector(selectData);
     console.log('data:', data);
     return (
-        <div className={styles.card} onClick={() => {
+        <div className={styles.card} style={{
+            backgroundColor: node.isHighlight ? 'yellow' : null,
+        }} onClick={(e) => {
             // TODO: 点击卡片的时候高亮子级节点和祖先节点
+            e.stopPropagation();
+            const hlt = highlight({node});
+            console.log('hlt:', hlt);
+            dispatch(hlt);
         }}>
             <div className={styles['card-add-prev']} onClick={(e) => {
                 e.stopPropagation();
