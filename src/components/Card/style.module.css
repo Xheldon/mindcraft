@@ -6,13 +6,19 @@
     border: 1px solid red;
     margin: 5px 0;
     position: relative;
+    padding: 20px 50px;
+    box-sizing: border-box;
+    margin: 20px 0;
 }
 .card-add-prev, .card-add-next, .card-add-children {
-    font-size: 20px;
+    font-size: 12px;
+    width: 50px;
+    height: 20px;
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
     border: 1px solid blue;
+    cursor: pointer;
 }
 .card-add-prev {
     top: 0;

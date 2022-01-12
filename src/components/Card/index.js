@@ -4,12 +4,12 @@ import {
     addPrev,
     addNext,
     addChildren,
-    selectPath,
     selectData,
     highlight,
 } from '../../app/dataSlice'
 
 import styles  from './style.module.css';
+import RichTextEditor from '../Editor';
 
 /**
  * 此为每列的容器组件
@@ -34,8 +34,8 @@ export function Card(props) {
                 const add = addPrev({node});
                 console.log('addPrev:', add);
                 dispatch(add);
-            }}>前面添加</div>
-            {node.id}
+            }}>👆🏻添加</div>
+            <RichTextEditor />
             <div className={styles['card-add-children']} onClick={(e) => {
                 e.stopPropagation();
                 const add = addChildren({
@@ -43,7 +43,7 @@ export function Card(props) {
                 });
                 console.log('addChildren:', add);
                 dispatch(add);
-            }}>添加子节点</div>
+            }}>👉🏻添加</div>
             <div className={styles['card-add-next']} onClick={(e) => {
                 e.stopPropagation();
                 const add = addNext({
@@ -51,7 +51,7 @@ export function Card(props) {
                 });
                 console.log('addNext:', add);
                 dispatch(add);
-            }}>后面添加</div>
+            }}>👇🏻添加</div>
         </div>
     );
 }
