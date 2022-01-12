@@ -10,7 +10,13 @@
     box-sizing: border-box;
     margin: 20px 0;
 }
+.card:hover .card-add-prev,
+.card:hover .card-add-next,
+.card:hover .card-add-children {
+    display: block;
+}
 .card-add-prev, .card-add-next, .card-add-children {
+    display: none;
     font-size: 12px;
     width: 50px;
     height: 20px;
