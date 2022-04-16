@@ -8,7 +8,7 @@ import {
     highlight,
 } from '../../app/dataSlice'
 
-import styles  from './style.module.css';
+import styles  from './card.module.scss';
 import RichTextEditor from '../Editor';
 
 /**

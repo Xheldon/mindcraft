@@ -1,7 +1,6 @@
 .container {
     height: 100%;
     background-color: aquamarine;
-    width: 100vw;
-    height: calc(100vh - 50px);
+    overflow-x: scroll;
     display: flex;
 }

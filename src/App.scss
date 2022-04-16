@@ -1,0 +1,10 @@
+.App {
+    height: 100vh;
+    overflow: hidden;
+}
+
+.main {
+    display: grid;
+    height: calc(100vh - 50px);
+    grid-template-columns: 200px auto;
+}
